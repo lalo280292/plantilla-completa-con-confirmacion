@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="es" class="cargando">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- =================================================================
+       ✏️ ARCHIVO EDITABLE (1 de 2) — textos, fotos, links, orden de
+       módulos, animaciones y posición de los adornos.
+       El otro archivo editable es css/invitacion.css (colores, fuentes,
+       tamaños y fondos).
+
+       Título y vista previa al compartir por WhatsApp. La imagen debe ser
+       URL completa al publicar: https://tusitio.com/boda/fotos/portada-1.jpg
+       ================================================================= -->
+  <title>Sofía & Mateo · Nuestra boda</title>
+  <meta name="description" content="Te invitamos a celebrar nuestra boda el 17 de abril de 2027.">
+  <meta property="og:title" content="Sofía & Mateo · Nuestra boda">
+  <meta property="og:description" content="Sábado 17 de abril de 2027 · Tepoztlán, Morelos">
+  <meta property="og:image" content="fotos/portada-1.jpg">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#6f7547">
+
+  <!-- =================================================================
+       ⚙️ AJUSTES (datos que no se ven escritos en la página)
+       ================================================================= -->
+  <script>
+    const AJUSTES = {
+      // Para el contador, el calendario y el formulario. Fecha: AAAA-MM-DDTHH:MM:00 (24 h)
+      evento: {
+        titulo:      "Boda de Sofía & Mateo",
+        fecha:       "2027-04-17T17:00:00",
+        fechaFin:    "2027-04-18T02:00:00",
+        lugar:       "Tepoztlán, Morelos",
+        descripcion: "¡Te esperamos para celebrar nuestra boda!",
+      },
+      // Invitado cuando el link no trae ?invitado=...&pases=...  (crea links con generador-links.html)
+      invitado: { nombre: "Familia Ramírez Ortega", pases: 4 },
+
+      // WhatsApp: código de país + número, solo dígitos ("" = sin botón de WhatsApp)
+      whatsapp:        "5215512345678",
+      mensajeWhatsapp: "¡Hola! Soy {invitado} y quiero confirmar mi asistencia a la boda de Sofía & Mateo.",
+
+      formulario: {
+        enviarA:      "whatsapp",   // "whatsapp" = abre WhatsApp con la respuesta · "prueba" = solo dice gracias
+        googleSheets: "",           // opcional: URL de Google Apps Script para guardar respuestas
+      },
+      portada: { cadaSegundos: 5, transicionSegundos: 2 },   // carrusel de fotos de la portada
+      sobre:   { velocidad: 1 },                            // 1 normal · 1.5 más rápido · 0.7 más lento
+      musica:  { archivo: "", volumen: 0.5 },               // ej. "musica/cancion.mp3" ("" = sin música)
+    };
+  </script>
+
+  <link rel="stylesheet" href="css/invitacion.css">
+  <link rel="stylesheet" href="css/base.css">
+  <noscript><style>html.cargando body { visibility: visible; } .sobre { display: none; }</style></noscript>
+</head>
+<body>
+
+<!-- =====================================================================
+     CÓMO EDITAR ESTE ARCHIVO
+     · Cada módulo es un <section>. El ORDEN aquí es el orden en pantalla.
+       Para quitar un módulo bórralo completo; para moverlo, córtalo y pégalo.
+     · Para quitar un texto o botón, borra su línea.
+     · data-animacion="subir"  en el <section> = animación por defecto del módulo
+       data-anim                = este elemento se anima (con la del módulo)
+       data-anim="letras"       = con una animación propia (lista en js/animaciones.js)
+       data-retraso="0.5"  data-duracion="2"   = segundos extra / duración
+       data-escalonar           = en un contenedor: sus hijos salen uno tras otro
+     · ADORNOS (png/webp con posición exacta, en % del módulo):
+       <img class="adorno" src="tematica/flor.png" alt=""
+            style="--x:10%; --y:20%; --ancho:30%; --giro:-15deg" data-anim="zoom">
+       También: --derecha / --abajo (en lugar de --x / --y), --opacidad,
+       --capa (1 detrás del texto · 3 delante) y la clase adorno--espejo.
+     ===================================================================== -->
+
+
+<!-- ============================ SOBRE (bórralo para entrar directo) ============================ -->
+<div class="sobre" id="sobre" role="button" tabindex="0" aria-label="Abrir invitación">
+  <div class="sobre__escenario">
+    <div class="sobre__interior"></div>
+    <picture class="sobre__capa sobre__abajo">
+      <source media="(orientation: landscape)" srcset="tematica/sobre-abajo-horizontal.webp">
+      <img src="tematica/sobre-abajo-vertical.webp" alt="" draggable="false">
+    </picture>
+    <div class="sobre__solapa">
+      <picture class="sobre__capa">
+        <source media="(orientation: landscape)" srcset="tematica/sobre-arriba-horizontal.webp">
+        <img src="tematica/sobre-arriba-vertical.webp" alt="" draggable="false">
+      </picture>
+    </div>
+    <div class="sobre__textos">
+      <p class="sobre__titulo">Sofía &amp; Mateo</p>
+      <p class="sobre__para">Una invitación especial para</p>
+      <p class="sobre__invitado" data-invitado-nombre></p>
+      <p class="sobre__ayuda">Toca el sello para abrir</p>
+    </div>
+    <span class="sobre__sello">
+      <img src="tematica/sello.webp" alt="" draggable="false">
+      <span class="sobre__iniciales">S&amp;M</span>
+    </span>
+  </div>
+</div>
+
+
+<main id="invitacion">
+
+  <!-- ============================ PORTADA ============================ -->
+  <section class="modulo portada" id="portada" data-animacion="subir">
+    <div class="portada__fotos">
+      <img src="fotos/portada-1.jpg" alt="">
+      <img src="fotos/portada-2.jpg" alt="">
+      <img src="fotos/portada-3.jpg" alt="">
+    </div>
+    <div class="portada__capa"></div>
+    <div class="portada__contenido">
+      <p class="etiqueta" data-anim data-retraso="0.3">Nos casamos</p>
+      <h1 class="portada__nombres" data-anim="letras" data-retraso="0.6">Sofía &amp; Mateo</h1>
+      <p class="portada__fecha" data-anim data-retraso="1.4">17 · 04 · 2027</p>
+    </div>
+    <div class="portada__puntos"></div>
+    <a class="portada__bajar" href="#" aria-label="Ver más" data-anim="flotar">
+      <img src="iconos/flecha-abajo.png" alt="">
+    </a>
+  </section>
+
+  <!-- ============================ FRASE ============================ -->
+  <section class="modulo" id="frase" data-animacion="desenfoque">
+    <div class="contenedor">
+      <img class="divisor" style="margin: 0 auto 20px" src="tematica/divisor.png" alt="" data-anim="linea">
+      <p class="frase__texto" data-anim>“El amor es paciente, es bondadoso… todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta.”</p>
+      <p class="etiqueta" data-anim>1 Corintios 13:4-7</p>
+    </div>
+  </section>
+
+  <!-- ============================ NOVIOS ============================ -->
+  <section class="modulo" id="novios" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:4%" data-anim="hoja-izquierda">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:4%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <h2 class="titulo" data-anim>Los novios</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <div class="novios">
+        <article class="novio-tarjeta">
+          <div class="foto-circulo" data-anim="circulo"><img src="fotos/novia.jpg" alt=""></div>
+          <p class="etiqueta" data-anim>La novia</p>
+          <h3 class="nombre-novio" data-anim>Sofía Valdés Ortega</h3>
+          <p class="mensaje" data-anim>Encontré en ti a mi mejor amigo y al compañero de todas mis aventuras. Hoy elijo caminar a tu lado para siempre.</p>
+        </article>
+        <div class="novios__y" data-anim="rebote">&amp;</div>
+        <article class="novio-tarjeta">
+          <div class="foto-circulo" data-anim="circulo"><img src="fotos/novio.jpg" alt=""></div>
+          <p class="etiqueta" data-anim>El novio</p>
+          <h3 class="nombre-novio" data-anim>Mateo Herrera Ruiz</h3>
+          <p class="mensaje" data-anim>Contigo aprendí que el hogar no es un lugar, es una persona. Gracias por decir que sí.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOTO PARALLAX 1 ============================ -->
+  <section class="modulo parallax" id="parallax1" data-animacion="zoom-suave">
+    <div class="parallax__marco" data-parallax><img class="parallax__img" src="fotos/parallax-1.jpg" alt=""></div>
+    <div class="parallax__capa"></div>
+    <p class="parallax__texto" data-anim>Dos almas, un mismo camino</p>
+  </section>
+
+  <!-- ============================ PADRES ============================ -->
+  <section class="modulo" id="padres" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:10%" data-anim="hoja-izquierda">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/familia.png" alt=""></span>
+        <h2 class="titulo" data-anim>Nuestros padres</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="texto" data-anim>Con la bendición de Dios y de nuestros padres</p>
+      <div class="personas" data-escalonar>
+        <article class="persona" data-anim>
+          <div class="foto-circulo"><img src="fotos/padres-novia.jpg" alt=""></div>
+          <p class="etiqueta">Padres de la novia</p>
+          <p class="persona__nombres">Ricardo Valdés Montes<br>Laura Ortega Salinas</p>
+        </article>
+        <article class="persona" data-anim>
+          <div class="foto-circulo"><img src="fotos/padres-novio.jpg" alt=""></div>
+          <p class="etiqueta">Padres del novio</p>
+          <p class="persona__nombres">Jorge Herrera Campos<br>Mónica Ruiz Delgado</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PADRINOS ============================ -->
+  <section class="modulo" id="padrinos" data-animacion="zoom">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:4%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/anillos.png" alt=""></span>
+        <h2 class="titulo" data-anim>Nuestros padrinos</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="texto" data-anim>Gracias por acompañarnos en este paso tan importante</p>
+      <div class="personas personas--padrinos" data-escalonar>
+        <article class="persona" data-anim>
+          <div class="foto-circulo"><img src="fotos/padrinos-1.jpg" alt=""></div>
+          <p class="etiqueta">Velación</p>
+          <p class="persona__nombres">Andrés Molina<br>Carolina Paz</p>
+        </article>
+        <article class="persona" data-anim>
+          <div class="foto-circulo"><img src="fotos/padrinos-2.jpg" alt=""></div>
+          <p class="etiqueta">Anillos</p>
+          <p class="persona__nombres">Diego Fuentes<br>Mariana León</p>
+        </article>
+        <article class="persona" data-anim>
+          <div class="foto-circulo"><img src="fotos/padrinos-3.jpg" alt=""></div>
+          <p class="etiqueta">Lazo</p>
+          <p class="persona__nombres">Héctor Ríos<br>Paola Cárdenas</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FECHA + CONTADOR + CALENDARIO ============================ -->
+  <!-- La fecha del contador y del calendario está en AJUSTES.evento (arriba) -->
+  <section class="modulo" id="fecha" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:4%" data-anim="hoja-izquierda">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:4%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/calendario.png" alt=""></span>
+        <h2 class="titulo" data-anim>Save the date</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <div class="fecha-grande">
+        <span class="fecha-grande__lado" data-anim="izquierda">Sábado</span>
+        <span class="fecha-grande__dia" data-anim="rebote">17</span>
+        <span class="fecha-grande__lado" data-anim="derecha">Abril</span>
+      </div>
+      <p class="fecha-anio" data-anim>2027</p>
+      <p class="fecha-hora" data-anim><img class="icono-linea" src="iconos/reloj.png" alt=""><span>5:00 p.m.</span></p>
+
+      <p class="etiqueta" data-anim>Faltan</p>
+      <div class="contador" data-contador data-anim>
+        <div class="contador__caja"><span class="contador__num" data-contador-parte="dias">00</span><span class="contador__etq">Días</span></div>
+        <div class="contador__caja"><span class="contador__num" data-contador-parte="horas">00</span><span class="contador__etq">Horas</span></div>
+        <div class="contador__caja"><span class="contador__num" data-contador-parte="minutos">00</span><span class="contador__etq">Min</span></div>
+        <div class="contador__caja"><span class="contador__num" data-contador-parte="segundos">00</span><span class="contador__etq">Seg</span></div>
+      </div>
+      <p class="contador__final" data-contador-final hidden>¡Llegó el gran día!</p>
+
+      <div class="botones" data-anim>
+        <button class="boton" type="button" data-calendario-abrir>
+          <img class="boton__icono" src="iconos/calendario.png" alt=""><span>Guardar en mi calendario</span>
+        </button>
+      </div>
+      <div class="botones calendario-opciones" data-calendario-opciones hidden>
+        <a class="boton boton--borde boton--chico" data-calendario-google target="_blank" rel="noopener">Google Calendar</a>
+        <a class="boton boton--borde boton--chico" data-calendario-ics download="evento.ics">Apple / Outlook</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ MISA ============================ -->
+  <section class="modulo" id="misa" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:4%" data-anim="hoja-izquierda">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/iglesia.png" alt=""></span>
+        <h2 class="titulo" data-anim>Ceremonia religiosa</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <article class="lugar">
+        <div class="lugar__foto" data-anim="cortina"><img src="fotos/misa.jpg" alt="" loading="lazy"></div>
+        <div class="lugar__info">
+          <h3 class="lugar__nombre" data-anim>Parroquia de la Natividad</h3>
+          <p class="lugar__hora" data-anim><img class="icono-linea" src="iconos/reloj.png" alt=""><span>5:00 p.m.</span></p>
+          <p class="lugar__direccion" data-anim>Av. Revolución s/n, Centro<br>Tepoztlán, Morelos</p>
+          <div class="botones" data-anim>
+            <a class="boton" href="https://www.google.com/maps/search/?api=1&amp;query=Parroquia+de+la+Natividad+Tepoztlan" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/ubicacion.png" alt=""><span>Abrir ubicación</span>
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================ RECEPCIÓN ============================ -->
+  <section class="modulo" id="recepcion" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:4%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/copas.png" alt=""></span>
+        <h2 class="titulo" data-anim>Recepción</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <article class="lugar">
+        <div class="lugar__foto" data-anim="cortina"><img src="fotos/recepcion.jpg" alt="" loading="lazy"></div>
+        <div class="lugar__info">
+          <h3 class="lugar__nombre" data-anim>Jardín Los Olivos</h3>
+          <p class="lugar__hora" data-anim><img class="icono-linea" src="iconos/reloj.png" alt=""><span>7:00 p.m.</span></p>
+          <p class="lugar__direccion" data-anim>Camino a San Andrés de la Cal 120<br>Tepoztlán, Morelos</p>
+          <div class="botones" data-anim>
+            <a class="boton" href="https://www.google.com/maps/search/?api=1&amp;query=Tepoztlan+Morelos" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/ubicacion.png" alt=""><span>Abrir ubicación</span>
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================ ITINERARIO ============================ -->
+  <!-- Los eventos tienen animación especial (línea que se dibuja): copia un <li> para agregar otro -->
+  <section class="modulo" id="itinerario" data-animacion="subir">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/reloj.png" alt=""></span>
+        <h2 class="titulo" data-anim>Itinerario</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <div class="itinerario" data-itinerario>
+        <div class="itinerario__linea"><span class="itinerario__progreso"></span></div>
+        <ol class="itinerario__lista">
+          <li class="itinerario__item">
+            <div class="itinerario__icono icono-circulo"><img src="iconos/anillos.png" alt=""></div>
+            <div class="itinerario__tarjeta">
+              <p class="itinerario__hora">5:00 p.m.</p>
+              <h3 class="itinerario__titulo">Ceremonia religiosa</h3>
+              <p class="itinerario__texto">Parroquia de la Natividad</p>
+            </div>
+          </li>
+          <li class="itinerario__item">
+            <div class="itinerario__icono icono-circulo"><img src="iconos/copas.png" alt=""></div>
+            <div class="itinerario__tarjeta">
+              <p class="itinerario__hora">6:30 p.m.</p>
+              <h3 class="itinerario__titulo">Cóctel de bienvenida</h3>
+              <p class="itinerario__texto">Jardín Los Olivos</p>
+            </div>
+          </li>
+          <li class="itinerario__item">
+            <div class="itinerario__icono icono-circulo"><img src="iconos/camara.png" alt=""></div>
+            <div class="itinerario__tarjeta">
+              <p class="itinerario__hora">7:30 p.m.</p>
+              <h3 class="itinerario__titulo">Sesión de fotos</h3>
+              <p class="itinerario__texto">Con familia y amigos</p>
+            </div>
+          </li>
+          <li class="itinerario__item">
+            <div class="itinerario__icono icono-circulo"><img src="iconos/cubiertos.png" alt=""></div>
+            <div class="itinerario__tarjeta">
+              <p class="itinerario__hora">8:30 p.m.</p>
+              <h3 class="itinerario__titulo">Cena</h3>
+              <p class="itinerario__texto">Menú de tres tiempos</p>
+            </div>
+          </li>
+          <li class="itinerario__item">
+            <div class="itinerario__icono icono-circulo"><img src="iconos/musica.png" alt=""></div>
+            <div class="itinerario__tarjeta">
+              <p class="itinerario__hora">10:00 p.m.</p>
+              <h3 class="itinerario__titulo">Primer baile</h3>
+            </div>
+          </li>
+          <li class="itinerario__item">
+            <div class="itinerario__icono icono-circulo"><img src="iconos/pastel.png" alt=""></div>
+            <div class="itinerario__tarjeta">
+              <p class="itinerario__hora">10:30 p.m.</p>
+              <h3 class="itinerario__titulo">Pastel</h3>
+            </div>
+          </li>
+          <li class="itinerario__item">
+            <div class="itinerario__icono icono-circulo"><img src="iconos/fiesta.png" alt=""></div>
+            <div class="itinerario__tarjeta">
+              <p class="itinerario__hora">11:00 p.m.</p>
+              <h3 class="itinerario__titulo">¡A bailar!</h3>
+              <p class="itinerario__texto">Hasta que el cuerpo aguante</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOTO PARALLAX 2 ============================ -->
+  <section class="modulo parallax" id="parallax2" data-animacion="zoom-suave">
+    <div class="parallax__marco" data-parallax><img class="parallax__img" src="fotos/parallax-2.jpg" alt=""></div>
+    <div class="parallax__capa"></div>
+  </section>
+
+  <!-- ============================ ÁLBUM DIGITAL ============================ -->
+  <section class="modulo" id="album" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:4%" data-anim="hoja-izquierda">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/camara.png" alt=""></span>
+        <h2 class="titulo" data-anim>Álbum digital</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <div class="album">
+        <div class="album__foto" data-anim="girar">
+          <div class="album__polaroid"><img src="fotos/album.jpg" alt="" loading="lazy"></div>
+        </div>
+        <div class="album__info">
+          <p class="texto" data-anim>Ayúdanos a guardar cada momento. Sube tus fotos y videos de la boda a nuestro álbum compartido y usa nuestro hashtag en redes.</p>
+          <p class="hashtag" data-anim>#SofiaYMateo2027</p>
+          <div class="botones" data-anim>
+            <a class="boton" href="https://photos.google.com/" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/camara.png" alt=""><span>Subir mis fotos</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ GALERÍA (toca una foto para verla en grande) ============================ -->
+  <section class="modulo" id="galeria" data-animacion="zoom">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/album.png" alt=""></span>
+        <h2 class="titulo" data-anim>Nuestra historia</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="texto" data-anim>Algunos de nuestros momentos favoritos</p>
+      <div class="galeria" data-galeria data-escalonar>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-01.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-02.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-03.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-04.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-05.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-06.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-07.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-08.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-09.jpg" alt="" loading="lazy"></button>
+        <button class="galeria__item" type="button" data-anim><img src="fotos/galeria-10.jpg" alt="" loading="lazy"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CÓDIGO DE VESTIMENTA ============================ -->
+  <section class="modulo" id="vestimenta" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:30%" data-anim="hoja-izquierda">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:30%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <h2 class="titulo" data-anim>Código de vestimenta</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="vestimenta__tipo" data-anim>Formal</p>
+      <div class="vestimenta">
+        <div class="vestimenta__opcion" data-anim>
+          <span class="icono-circulo"><img src="iconos/vestido.png" alt=""></span>
+          <h3>Mujeres</h3>
+          <p>Vestido largo o de coctel</p>
+        </div>
+        <div class="vestimenta__opcion" data-anim>
+          <span class="icono-circulo"><img src="iconos/traje.png" alt=""></span>
+          <h3>Hombres</h3>
+          <p>Traje oscuro y corbata</p>
+        </div>
+      </div>
+      <p class="nota" data-anim>Con mucho cariño, reservamos el color blanco para la novia.</p>
+      <div class="paleta" data-anim>
+        <p class="etiqueta">Paleta sugerida</p>
+        <div class="paleta__colores">
+          <span class="paleta__color" style="background:#c8b99c"></span>
+          <span class="paleta__color" style="background:#a3826c"></span>
+          <span class="paleta__color" style="background:#8b8f6a"></span>
+          <span class="paleta__color" style="background:#5b6b7a"></span>
+          <span class="paleta__color" style="background:#3d3a32"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ MESA DE REGALOS ============================ -->
+  <section class="modulo" id="regalos" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:4%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/regalo.png" alt=""></span>
+        <h2 class="titulo" data-anim>Mesa de regalos</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="texto" data-anim>Tu presencia es nuestro mejor regalo. Si deseas tener un detalle con nosotros, te compartimos algunas opciones.</p>
+      <div class="tarjetas" data-escalonar>
+        <article class="tarjeta" data-anim>
+          <span class="icono-circulo"><img src="iconos/bolsa.png" alt=""></span>
+          <h3 class="tarjeta__titulo">Liverpool</h3>
+          <p class="tarjeta__texto">Número de evento</p>
+          <p class="regalo__numero">51234567</p>
+          <div class="botones">
+            <a class="boton" href="https://mesaderegalos.liverpool.com.mx/milistaderegalos/51234567" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/regalo.png" alt=""><span>Ver mesa de regalos</span>
+            </a>
+          </div>
+        </article>
+        <article class="tarjeta" data-anim>
+          <span class="icono-circulo"><img src="iconos/banco.png" alt=""></span>
+          <h3 class="tarjeta__titulo">Transferencia bancaria</h3>
+          <dl class="datos-banco">
+            <div class="datos-banco__fila"><dt>Banco</dt><dd><span>BBVA</span></dd></div>
+            <div class="datos-banco__fila"><dt>Titular</dt><dd><span>Sofía Valdés Ortega</span></dd></div>
+            <div class="datos-banco__fila"><dt>Cuenta</dt><dd><span>0123 4567 89</span></dd></div>
+            <div class="datos-banco__fila"><dt>CLABE</dt><dd><span>012180001234567891</span>
+              <button class="copiar" type="button" data-copiar="012180001234567891"><img src="iconos/copiar.png" alt=""><span>Copiar</span></button>
+            </dd></div>
+          </dl>
+        </article>
+        <!-- Lluvia de sobres (quita los comentarios para mostrarla)
+        <article class="tarjeta" data-anim>
+          <span class="icono-circulo"><img src="iconos/sobre.png" alt=""></span>
+          <h3 class="tarjeta__titulo">Lluvia de sobres</h3>
+          <p class="tarjeta__texto">El día del evento habrá una caja para depositar tu sobre.</p>
+        </article>
+        -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ HOSPEDAJE ============================ -->
+  <section class="modulo" id="hospedaje" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:4%" data-anim="hoja-izquierda">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/maleta.png" alt=""></span>
+        <h2 class="titulo" data-anim>Hospedaje</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="texto" data-anim>Para nuestros invitados que vienen de fuera, te sugerimos estas opciones cercanas.</p>
+      <div class="tarjetas" data-escalonar>
+        <article class="tarjeta" data-anim>
+          <span class="icono-circulo"><img src="iconos/hotel.png" alt=""></span>
+          <h3 class="tarjeta__titulo">Hotel Casa Olivo</h3>
+          <p class="tarjeta__texto">A 5 minutos de la recepción</p>
+          <p class="hotel__dato"><img class="icono-linea" src="iconos/ubicacion.png" alt=""><span>Calle del Tepozteco 15, Tepoztlán</span></p>
+          <p class="hotel__dato"><img class="icono-linea" src="iconos/telefono.png" alt=""><a href="tel:+527391234567">+52 739 123 4567</a></p>
+          <p class="hotel__codigo">Menciona el código BODASYM para 15% de descuento</p>
+          <div class="botones">
+            <a class="boton boton--chico" href="https://www.google.com/search?q=hotel+tepoztlan" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/hotel.png" alt=""><span>Reservar</span>
+            </a>
+            <a class="boton boton--borde boton--chico" href="https://www.google.com/maps/search/?api=1&amp;query=hoteles+Tepoztlan" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/ubicacion.png" alt=""><span>Ubicación</span>
+            </a>
+          </div>
+        </article>
+        <article class="tarjeta" data-anim>
+          <span class="icono-circulo"><img src="iconos/hotel.png" alt=""></span>
+          <h3 class="tarjeta__titulo">Posada Jardín del Valle</h3>
+          <p class="tarjeta__texto">A 10 minutos de la parroquia</p>
+          <p class="hotel__dato"><img class="icono-linea" src="iconos/ubicacion.png" alt=""><span>Av. 5 de Mayo 48, Tepoztlán</span></p>
+          <p class="hotel__dato"><img class="icono-linea" src="iconos/telefono.png" alt=""><a href="tel:+527397654321">+52 739 765 4321</a></p>
+          <div class="botones">
+            <a class="boton boton--chico" href="https://www.google.com/search?q=posada+tepoztlan" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/hotel.png" alt=""><span>Reservar</span>
+            </a>
+            <a class="boton boton--borde boton--chico" href="https://www.google.com/maps/search/?api=1&amp;query=posadas+Tepoztlan" target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/ubicacion.png" alt=""><span>Ubicación</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PASE DE ENTRADA ============================ -->
+  <!-- El nombre y los pases vienen del link del invitado o de AJUSTES.invitado.
+       {pases} se cambia por el número; data-uno es el texto cuando es 1 pase. -->
+  <section class="modulo" id="invitados" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:4%" data-anim="hoja-izquierda">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:4%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <h2 class="titulo" data-anim>Pase de entrada</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <div class="pase" data-anim>
+        <span class="icono-circulo"><img src="iconos/personas.png" alt=""></span>
+        <p class="etiqueta">Esta invitación es para</p>
+        <p class="pase__nombre" data-invitado-nombre></p>
+        <span class="pase__linea"></span>
+        <p class="pase__pases" data-invitado-pases data-uno="Hemos reservado <b>1</b> lugar en su honor">Hemos reservado <b>{pases}</b> lugares en su honor</p>
+      </div>
+      <p class="nota nota--icono" data-anim>
+        <img class="icono-linea" src="iconos/ninos.png" alt=""><span>Con cariño, este evento es solo para adultos.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================ CONFIRMAR ASISTENCIA ============================ -->
+  <!-- El número y mensaje de WhatsApp están en AJUSTES (arriba) -->
+  <section class="modulo" id="confirmar" data-animacion="subir">
+    <div class="contenedor">
+      <header class="encabezado">
+        <span class="icono-circulo" data-anim><img src="iconos/check.png" alt=""></span>
+        <h2 class="titulo" data-anim>Confirma tu asistencia</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="texto" data-anim>Por favor confírmanos antes del <b>1 de marzo de 2027</b>. Tu respuesta nos ayuda a preparar todo con mucho cariño.</p>
+      <div class="botones">
+        <a class="boton" href="#formulario" data-anim="latido">
+          <img class="boton__icono" src="iconos/pluma.png" alt=""><span>Ir al formulario</span>
+        </a>
+        <a class="boton boton--borde" data-confirmar-whatsapp target="_blank" rel="noopener" data-anim>
+          <img class="boton__icono" src="iconos/whatsapp.png" alt=""><span>Confirmar por WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FORMULARIO DE CONFIRMACIÓN ============================ -->
+  <!-- A dónde se envía: AJUSTES.formulario (arriba). Teléfono y mensaje son opcionales: borra su <label> si no los quieres -->
+  <section class="modulo" id="formulario" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:55%" data-anim="hoja-izquierda">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:55%" data-anim="hoja-derecha">
+    <div class="contenedor">
+      <header class="encabezado">
+        <h2 class="titulo" data-anim>Formulario</h2>
+        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
+      </header>
+      <p class="texto" data-anim>Llena tus datos y presiona enviar.</p>
+
+      <form class="formulario tarjeta" id="form-confirmacion" novalidate data-anim>
+        <label class="campo">
+          <span>Nombre completo</span>
+          <input name="nombre" type="text" autocomplete="name" required>
+        </label>
+        <fieldset class="campo">
+          <legend>¿Nos acompañarás?</legend>
+          <div class="opciones">
+            <label class="opcion"><input type="radio" name="asistencia" value="si" checked><span>¡Sí, ahí estaré!</span></label>
+            <label class="opcion"><input type="radio" name="asistencia" value="no"><span>Lo siento, no podré ir</span></label>
+          </div>
+        </fieldset>
+        <label class="campo" data-campo-personas>
+          <span>Número de asistentes</span>
+          <select name="personas"></select>
+        </label>
+        <label class="campo">
+          <span>Teléfono (opcional)</span>
+          <input name="telefono" type="tel" autocomplete="tel">
+        </label>
+        <label class="campo">
+          <span>Mensaje para los novios (opcional)</span>
+          <textarea name="mensaje" rows="3"></textarea>
+        </label>
+        <p class="formulario__error" data-form-error hidden></p>
+        <button class="boton boton--ancho" type="submit">
+          <img class="boton__icono" src="iconos/sobre.png" alt=""><span>Enviar confirmación</span>
+        </button>
+      </form>
+
+      <div class="formulario__gracias tarjeta" data-form-gracias hidden>
+        <span class="icono-circulo"><img src="iconos/corazon.png" alt=""></span>
+        <p class="texto">¡Gracias por confirmar! Nos hace muy felices compartir este día contigo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOTO FINAL ============================ -->
+  <section class="modulo final" id="final" data-animacion="desenfoque">
+    <div class="parallax__marco" data-parallax><img class="parallax__img" src="fotos/final.jpg" alt=""></div>
+    <div class="parallax__capa"></div>
+    <div class="final__contenido">
+      <h2 class="titulo final__titulo" data-anim>¡Te esperamos!</h2>
+      <p class="final__texto" data-anim>Gracias por ser parte de nuestra historia</p>
+      <p class="final__firma" data-anim>Sofía &amp; Mateo</p>
+    </div>
+  </section>
+
+  <!-- ============================ PIE DE PÁGINA (tu marca) ============================ -->
+  <!-- Con link:  <p><a href="https://instagram.com/tumarca" target="_blank" rel="noopener">…</a></p> -->
+  <footer class="pie" id="pie">
+    <p>Invitación digital diseñada con ♥ por Tu Marca</p>
+  </footer>
+
+</main>
+
+
+<!-- 🔒 No cambiar el orden -->
+<script src="librerias/gsap.min.js"></script>
+<script src="librerias/ScrollTrigger.min.js"></script>
+<script src="js/animaciones.js"></script>
+<script src="js/funciones.js"></script>
+</body>
+</html>

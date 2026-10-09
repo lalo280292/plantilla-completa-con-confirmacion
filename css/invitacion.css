@@ -1,0 +1,215 @@
+/* =====================================================================
+   ✏️  ESTILO DE ESTA INVITACIÓN  —  archivo editable (2 de 2)
+   ---------------------------------------------------------------------
+   Aquí cambia todo lo VISUAL de una invitación:
+     1. Fuentes            4. Fondo (color o imagen en mosaico)
+     2. Colores            5. Adornos (tamaño por defecto)
+     3. Tamaños y medidas  6. Ajustes de un solo módulo
+
+   El diseño fijo está en css/base.css (ese no se toca).
+
+   Unidades:  px = píxeles · % = del contenedor · vw = % del ancho de
+   pantalla · svh = % del alto de pantalla · clamp(MIN, IDEAL, MAX)
+   ===================================================================== */
+
+
+/* =====================================================================
+   1) FUENTES
+   ---------------------------------------------------------------------
+   Las fuentes locales están en /fuentes (funcionan sin internet).
+   Para usar Google Fonts pega su línea @import en la PRIMERA línea de
+   este archivo y cambia el nombre en --fuente-... (abajo).
+   ===================================================================== */
+
+@font-face { font-family: 'Pinyon Script'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url(../fuentes/pinyon-400.woff2) format('woff2'); }
+@font-face { font-family: 'Italianno'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url(../fuentes/italianno-400.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url(../fuentes/cormorant-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 400; font-style: italic; font-display: swap;
+  src: url(../fuentes/cormorant-400-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 500; font-style: normal; font-display: swap;
+  src: url(../fuentes/cormorant-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-weight: 600; font-style: normal; font-display: swap;
+  src: url(../fuentes/cormorant-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url(../fuentes/manrope-400.woff2) format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 500; font-style: normal; font-display: swap;
+  src: url(../fuentes/manrope-500.woff2) format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 600; font-style: normal; font-display: swap;
+  src: url(../fuentes/manrope-600.woff2) format('woff2'); }
+
+
+:root {
+
+  /* ---------- QUÉ FUENTE USA CADA TEXTO ---------- */
+  --fuente-titulos:   'Pinyon Script', 'Italianno', cursive;          /* nombres y títulos */
+  --fuente-texto:     'Cormorant Garamond', Georgia, serif;           /* párrafos */
+  --fuente-detalles:  'Manrope', 'Segoe UI', Arial, sans-serif;       /* etiquetas, botones, formulario */
+
+  /* ---------- TAMAÑOS DE LETRA ---------- */
+  --tamano-nombres-portada:  clamp(3.4rem, 15vw, 7rem);
+  --tamano-titulo-modulo:    clamp(2.7rem, 11vw, 4.2rem);
+  --tamano-nombre-novios:    clamp(2.3rem, 9vw, 3rem);
+  --tamano-subtitulo:        clamp(1.35rem, 5vw, 1.7rem);
+  --tamano-texto:            clamp(1.12rem, 4.2vw, 1.3rem);
+  --tamano-texto-pequeno:    .78rem;
+  --tamano-numero-contador:  clamp(2rem, 9vw, 3rem);
+  --tamano-fecha-grande:     clamp(4rem, 20vw, 6.5rem);
+  --espaciado-etiquetas:     .28em;   /* separación entre letras de las etiquetas */
+  --interlineado:            1.55;
+
+
+  /* =====================================================================
+     2) COLORES  (formato #RRGGBB)
+     Paleta actual: neutros cálidos (marfil, lino, arena) + verde olivo.
+     ===================================================================== */
+  --color-fondo:            #f7f3ec;   /* marfil */
+  --color-fondo-alterno:    #efe9de;   /* lino (para alternar módulos, ver sección 6) */
+  --color-tarjeta:          #fffdf8;   /* fondo de tarjetas y cajas */
+  --color-oscuro:           #2f3222;   /* pie de página, visor de fotos */
+
+  --color-texto:            #3d3a32;
+  --color-texto-suave:      #7a7466;   /* direcciones, notas */
+  --color-titulos:          #5f6640;
+  --color-texto-sobre-foto: #ffffff;   /* portada, parallax, final */
+
+  --color-acento:           #6f7547;   /* detalles */
+  --color-acento-oscuro:    #4d5232;   /* números del contador */
+  --color-acento-claro:     #a9ad86;   /* líneas, bordes */
+  --color-acento-suave:     #e6e7d8;   /* círculos detrás de iconos */
+
+  --color-arena:            #c8b99c;   /* líneas finas, marcos de fotos */
+  --color-borde:            #e2dacb;   /* bordes de tarjetas y campos */
+
+  --color-boton:            #6f7547;
+  --color-boton-texto:      #ffffff;
+  --color-boton-hover:      #4d5232;
+
+  --color-sobre-fondo:      #e9e3d6;   /* alrededor del sobre */
+  --color-sobre-interior:   #5f6640;   /* interior del sobre al abrirse */
+  --color-sobre-texto:      #5a5446;
+  --color-sello-texto:      #f4efe2;   /* iniciales del sello */
+
+  /* El sello original es rojo; este filtro lo vuelve verde olivo.
+     none = color original · cambia hue-rotate (0 a 360) para otros tonos */
+  --filtro-sello:           hue-rotate(78deg) saturate(.45) brightness(1.15);
+
+  /* Iconos: none = su color original · brightness(0) invert(1) = blancos */
+  --filtro-icono:           none;
+  --filtro-icono-boton:     brightness(0) invert(1);   /* iconos dentro de botones */
+
+  --sombra-suave:   0 10px 30px -12px rgba(61, 58, 50, .18);
+  --sombra-foto:    0 18px 40px -18px rgba(47, 50, 34, .45);
+  --capa-portada:   linear-gradient(to bottom, rgba(0,0,0,.05) 35%, rgba(31,33,22,.72) 100%);
+  --capa-parallax:  rgba(31, 33, 22, .30);   /* oscurece fotos parallax */
+  --capa-final:     rgba(31, 33, 22, .45);
+
+
+  /* =====================================================================
+     3) TAMAÑOS Y MEDIDAS
+     ===================================================================== */
+  /* General */
+  --ancho-contenido:      960px;
+  --ancho-texto:          560px;
+  --margen-lateral:       22px;
+  --espacio-modulos:      clamp(72px, 15vw, 120px);   /* arriba/abajo de cada módulo */
+  --espacio-titulo:       clamp(26px, 6vw, 44px);     /* debajo de cada título */
+  --alineacion-textos:    center;                     /* center | left | right */
+
+  /* Sobre (% de la imagen del sobre) · vertical = celular, horizontal = computadora */
+  --sello-x-vertical:            50%;
+  --sello-y-vertical:            53%;
+  --sello-tamano-vertical:       30%;
+  --sobre-textos-y-vertical:     65%;
+  --sello-x-horizontal:          50%;
+  --sello-y-horizontal:          54%;
+  --sello-tamano-horizontal:     13%;
+  --sobre-textos-y-horizontal:   69%;
+
+  /* Portada */
+  --portada-altura:           100svh;
+  --portada-foto-posicion:    center 35%;   /* qué parte de la foto se ve */
+  --portada-textos-abajo:     12svh;
+  --portada-alineacion:       center;
+
+  /* Novios */
+  --novios-foto-tamano:       clamp(170px, 52vw, 230px);
+
+  /* Parallax */
+  --parallax-altura:          100svh;
+  --parallax-foto-posicion:   center center;
+
+  /* Padres y padrinos */
+  --padres-foto-tamano:       120px;
+  --padres-ancho-minimo:      220px;
+  --padrinos-foto-tamano:     100px;
+  --padrinos-ancho-minimo:    140px;   /* 140px = 2 columnas en celular */
+
+  /* Misa y recepción */
+  --lugar-forma-foto:         999px 999px 14px 14px;   /* arco. Recta: 14px */
+  --lugar-proporcion-foto:    4 / 3;
+
+  /* Itinerario */
+  --itinerario-linea-x:       32px;
+  --itinerario-icono:         58px;
+
+  /* Álbum */
+  --album-giro-foto:          -3deg;
+
+  /* Galería */
+  --galeria-columnas-celular:       2;
+  --galeria-columnas-computadora:   5;
+  --galeria-espacio:                8px;
+  --galeria-forma:                  6px;
+
+  /* Foto final */
+  --final-altura:             100svh;
+  --final-foto-posicion:      center center;
+  --final-textos-abajo:       14svh;
+
+  /* Botón de música */
+  --musica-abajo:             18px;
+  --musica-derecha:           18px;
+
+
+  /* =====================================================================
+     4) FONDO  —  dos opciones:
+        A) Solo color:            --fondo-imagen: none;
+        B) Imagen en mosaico:     --fondo-imagen: url("../tematica/mi-patron.png");
+           (se repite como mosaico; si es transparente se ve el color debajo)
+     ===================================================================== */
+  --fondo-color:    var(--color-fondo);
+  --fondo-imagen:   url("../tematica/fondo-papel.png");
+  --fondo-tamano:   auto;          /* tamaño de cada pieza del mosaico: auto | 200px | … */
+
+
+  /* =====================================================================
+     5) ADORNOS  —  tamaño y opacidad cuando el adorno no dice otra cosa
+     (la posición de cada adorno se escribe en index.html)
+     ===================================================================== */
+  --adorno-ancho:     clamp(95px, 27vw, 220px);
+  --adorno-opacidad:  .9;
+}
+
+
+/* =====================================================================
+   6) AJUSTES DE UN SOLO MÓDULO
+   ---------------------------------------------------------------------
+   Escribe  #id-del-modulo { ... }  y cambia ahí cualquier variable de
+   arriba. El id es el que tiene cada <section> en index.html.
+   ===================================================================== */
+
+/* Módulos con fondo alterno (lino) */
+#padres, #fecha, #itinerario, #galeria, #regalos, #invitados, #formulario {
+  --fondo-color: var(--color-fondo-alterno);
+}
+
+/* Ejemplo — un módulo con su propia imagen en mosaico:
+#novios { --fondo-imagen: url("../tematica/patron-flores.png"); --fondo-tamano: 180px; }
+*/
+
+/* Ejemplo — mover un elemento a mano:
+#novios .nombre-novio { position: relative; top: -6px; }
+*/
