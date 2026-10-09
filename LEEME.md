@@ -1,7 +1,11 @@
 # Plantilla de invitación · v1 (formato general)
 
 Estilo elegante, neutros cálidos con verde olivo y hojas de olivo a los costados.
-Hecha solo con **HTML, CSS, JavaScript y GSAP**: no necesita instalar nada.
+Hecha con **HTML, CSS, JavaScript y GSAP**. Las confirmaciones se guardan con **PHP** (`api.php`), sin base de datos.
+
+**Un solo link para todos los invitados**: no lleva nombres ni pases. El formulario está abierto
+y cada invitado confirma de **1 a 10 personas en total** con sus nombres; también puede dejar una felicitación.
+Cada respuesta recibe su **código de 5 caracteres** (ej. `KZ83C`) y su **pase con QR**.
 
 ---
 
@@ -9,12 +13,18 @@ Hecha solo con **HTML, CSS, JavaScript y GSAP**: no necesita instalar nada.
 
 | Archivo / carpeta | Para qué sirve | ¿Se edita? |
 | --- | --- | --- |
-| **`index.html`** | Textos, fotos, links, **orden de módulos**, **animación de cada elemento**, **posición de los adornos** y `AJUSTES` (fecha, WhatsApp, formulario, música) | ✅ **Editable 1** |
+| **`index.html`** | Textos, fotos, links, **orden de módulos**, **animación de cada elemento**, **posición de los adornos** y `AJUSTES` (fecha, formulario, música) | ✅ **Editable 1** |
 | **`css/invitacion.css`** | Fuentes, colores, tamaños, **fondo** (color o mosaico), ajustes por módulo | ✅ **Editable 2** |
 | `css/base.css` | Diseño fijo de todos los módulos | ❌ |
 | `js/animaciones.js` | Todas las animaciones GSAP y el motor que lee `data-anim` | ❌ |
-| `js/funciones.js` | Sobre, carrusel, contador, calendario, galería, copiar, WhatsApp, formulario, música | ❌ |
-| `generador-links.html` | Crea un link personalizado por invitado | Herramienta |
+| `js/funciones.js` | Sobre, carrusel, contador, calendario, galería, copiar, formulario, música | ❌ |
+| `panel.html` | Panel: resumen, abrir/cerrar formulario, PDF y respaldo | Administración |
+| `confirmados.html` | Lista en vivo de las respuestas (editar o eliminar respuestas) | Administración |
+| `firmas.html` | Libro de felicitaciones, con modo pantalla para proyectar | Administración |
+| `paseqr.html` | Pase de acceso con QR del invitado (fondo: `suqr.jpg`) | Se reemplaza `suqr.jpg` |
+| `escaner.html` | Lo que se abre al leer el QR: datos de la confirmación (también busca por código) | ❌ |
+| `data/` | Aquí se guardan las respuestas. **Súbela al hosting** | ❌ |
+| `api.php`, `config.php`, `admin.js` | Backend de las confirmaciones y su configuración | Solo `config.php` |
 | `fotos/` | Fotografías | Se reemplazan |
 | `iconos/` | Iconos (PNG / WebP) | Se reemplazan |
 | `tematica/` | Adornos, divisor, fondo, sobre y sello (PNG / WebP / JPG) | Se reemplazan |
@@ -42,7 +52,6 @@ Cada módulo es un `<section class="modulo" id="...">`.
 - **El orden en el archivo es el orden en pantalla.** Para mover uno, corta y pega todo su `<section>`.
 - **Para quitar un módulo**, bórralo completo. Para quitar un texto o botón, borra su línea.
 - Para agregar otro padrino, foto de galería, hotel, evento del itinerario… copia un bloque y cámbialo.
-- Si quitas el formulario, el botón «Ir al formulario» se oculta solo.
 - El **sobre** es el `<div id="sobre">` del inicio: bórralo para entrar directo a la invitación.
 
 | id | Módulo | Clases principales |
@@ -61,9 +70,7 @@ Cada módulo es un `<section class="modulo" id="...">`.
 | `vestimenta` | Código de vestimenta + paleta | `.vestimenta__opcion` `.paleta__color` |
 | `regalos` | Tarjetas de regalo / datos bancarios | `.tarjeta` `.datos-banco` `.copiar` |
 | `hospedaje` | Tarjetas de hoteles | `.tarjeta` `.hotel__dato` |
-| `invitados` | Pase con nombre y número de pases | `.pase__nombre` `.pase__pases` |
-| `confirmar` | Botones de confirmación | `[data-confirmar-whatsapp]` |
-| `formulario` | Formulario de asistencia | `.formulario` `.campo` |
+| `formulario` | Confirmación de asistencia (nombre, sí/no, personas, nombres, felicitación) | `.formulario` `.campo` |
 | `final` | Foto final a pantalla completa | `.final__titulo` |
 | `pie` | Crédito de tu marca | `.pie` |
 
@@ -174,42 +181,30 @@ Las fotos actuales son **de muestra**: reemplázalas antes de entregar.
 
 ---
 
-## 👥 Links personalizados por invitado
+## ✅ Confirmaciones y felicitaciones
 
-```
-https://tusitio.com/boda-ana-luis/?invitado=Familia%20López&pases=4
-```
+La invitación se comparte con **un solo link** (el de la carpeta, ej. `https://tusitio.com/boda-ana-luis/`).
+Cada envío del formulario es una respuesta nueva con: **nombre**, **¿asistirá?**, **número de personas
+(1 a 10, en total)**, **nombres de los invitados** y una **felicitación opcional**.
+Todo se guarda en `data/confirmados.json` (la carpeta `data/` está protegida con `.htaccess`).
 
-El nombre aparece en el sobre, en el «Pase de entrada» y en el formulario, que además limita
-los asistentes a sus pases. Si el link no trae datos se usa `AJUSTES.invitado`.
-Abre **`generador-links.html`**, pega tu lista (`Nombre, pases`) y obtendrás todos los links
-para copiar, enviar por WhatsApp o descargar en Excel.
+**Código y pase QR:** al confirmar que sí asiste, el invitado ve su código (ej. `KZ83C`) y el botón
+«Descargar mi pase con QR» (`paseqr.html?id=KZ83C`). El QR abre `escaner.html?id=KZ83C`, que muestra
+en grande el nombre, las personas confirmadas y sus nombres. En la entrada, si un QR no se lee,
+abre `escaner.html` y escribe el código.
 
-> El link solo personaliza lo que se ve; no es un sistema de seguridad.
+- `AJUSTES.formulario.maxPersonas` (en `index.html`) y `MAX_PERSONAS` (en `config.php`) = máximo de personas.
+- `ADMIN_CLAVE` en `config.php` = clave para el panel (vacía = sin clave).
 
----
+**Panel (`panel.html`)**
 
-## ✅ Confirmaciones (formulario)
-
-En `index.html → AJUSTES.formulario`:
-
-- `enviarA: "whatsapp"` → abre WhatsApp con la respuesta lista para `AJUSTES.whatsapp`.
-- `enviarA: "prueba"` → solo muestra el mensaje de gracias.
-- `googleSheets: "URL"` (opcional) → además guarda cada respuesta en una hoja de Google.
-
-**Google Sheets:** crea una hoja → *Extensiones → Apps Script* → pega:
-
-```js
-function doPost(e) {
-  const d = JSON.parse(e.postData.contents);
-  SpreadsheetApp.getActiveSheet().appendRow([
-    new Date(), d.invitacion, d.nombre, d.asistencia, d.personas, d.telefono, d.mensaje
-  ]);
-  return ContentService.createTextOutput("ok");
-}
-```
-
-*Implementar → Nueva implementación → Aplicación web → Acceso: Cualquier usuario*, y pega la URL en `googleSheets`.
+- Resumen en vivo: personas que asistirán, respuestas «Sí», respuestas «No» y felicitaciones.
+- **Abrir / cerrar el formulario**: cerrado, la invitación muestra un aviso en lugar del formulario.
+- **Confirmaciones** (`confirmados.html`): lista en vivo con código y nombres; copiar el link del pase QR,
+  editar una respuesta (nombre, asistencia, personas, nombres o felicitación) o eliminarla.
+- **Lectura de Pases** (`escaner.html`): buscar un código a mano.
+- **Libro de Felicitaciones** (`firmas.html`): mensajes, con modo pantalla para proyectar en la fiesta.
+- PDF de confirmados y respaldo de todas las respuestas.
 
 ---
 
@@ -225,16 +220,26 @@ en `AJUSTES`. El botón aparece solo y la canción empieza al abrir el sobre.
 Algunos navegadores no cargan bien todo con doble clic. Desde la carpeta de la invitación:
 
 ```bash
-python3 -m http.server 8000
+php -S localhost:8000
 ```
 
-y abre `http://localhost:8000`.
+y abre `http://localhost:8000` (invitación) y `http://localhost:8000/panel.html` (panel).
+Con `python3 -m http.server 8000` también se ve la invitación, pero el formulario no guarda.
 
 ---
 
 ## 🌐 Publicar
 
-Funciona en cualquier hosting estático: **Netlify Drop**, **GitHub Pages**, **Vercel** o tu hosting.
+Necesita un hosting con **PHP** (cualquier hosting compartido tipo cPanel sirve). Sube toda la carpeta
+**incluida `data/`** y comparte su link.
+
+Si al confirmar aparece «No se pudo crear la carpeta data/» o «no tiene permisos de escritura»:
+en el administrador de archivos del hosting crea la carpeta `data` junto a `api.php` (si no está)
+y cámbiale los permisos a **755**; si sigue igual, **775** o **777**.
+
+**Si usas Cloudflare** (o el hosting guarda caché): los .js y .css se cargan con `?v=3`. Cada vez que
+cambies `admin.js`, `js/` o `css/`, sube ese número en los .html (ej. `?v=4`) para que todos reciban la versión nueva.
+El panel queda en `https://tusitio.com/boda-ana-luis/panel.html`.
 Después de publicar, cambia `og:image` en `index.html` por la URL completa de la foto.
 
 ---

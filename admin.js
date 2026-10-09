@@ -1,5 +1,4 @@
-// admin.js — Utilidades compartidas por las páginas de administración
-// (registro, confirmados, mesas, mesaconfirmados, panel, control_formulario y escaner).
+// admin.js — Utilidades compartidas por panel, confirmados y escaner.
 
 const API_URL = 'api.php';
 const CLAVE_STORAGE = 'invitaciones_clave_admin';
@@ -8,8 +7,10 @@ const CLAVE_STORAGE = 'invitaciones_clave_admin';
 document.head.insertAdjacentHTML('beforeend',
     '<style>.copiado{background:#dcfce7!important;color:#15803d!important;border-color:#86efac!important}</style>');
 
-// URL base de la invitación (la manda api.php en la acción "invitados").
-let URL_INVITACION = new URL('./', location.href).href;
+// Link del pase con QR de una confirmación (paseqr.html está en la misma carpeta)
+function linkPase(id) {
+    return new URL('paseqr.html?id=' + encodeURIComponent(id), location.href).href;
+}
 
 function leerStorage(clave) {
     try { return localStorage.getItem(clave) || ''; } catch (e) { return ''; }
@@ -24,8 +25,8 @@ function guardarStorage(clave, valor) {
 
 /**
  * Llama a api.php. Si el servidor pide clave (401) la solicita una vez y la recuerda.
- *   apiAdmin('invitados')
- *   apiAdmin('guardar_invitados', { cambios: [...] })   -> POST con JSON
+ *   apiAdmin('confirmados')
+ *   apiAdmin('borrar_confirmacion', { id: 'XXXXX' })   -> POST con JSON
  */
 async function apiAdmin(accion, datos = null) {
     for (let intento = 0; intento < 3; intento++) {
@@ -56,23 +57,12 @@ async function apiAdmin(accion, datos = null) {
         catch (e) { throw new Error(`El servidor respondió algo inesperado (${res.status}). ¿Está activo PHP?`); }
 
         if (!res.ok || json.ok === false) throw new Error(json.error || `Error ${res.status}`);
-        if (json.url_invitacion) URL_INVITACION = json.url_invitacion;
         return json;
     }
     throw new Error('Clave de administración incorrecta.');
 }
 
-// Link de la invitación: https://lalo.inv15.com/?id=12345
-function linkInvitacion(id) {
-    return URL_INVITACION + (URL_INVITACION.includes('?') ? '&' : '?') + 'id=' + encodeURIComponent(id);
-}
-
-// Link del pase con QR (paseqr.html está en la misma carpeta que este panel)
-function linkPase(id) {
-    return new URL('paseqr.html?id=' + encodeURIComponent(id), location.href).href;
-}
-
-// Escapa texto antes de meterlo en innerHTML (los nombres los escriben los invitados)
+// Escapa texto antes de meterlo en innerHTML (los nombres y mensajes los escriben los invitados)
 function esc(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, c => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -114,56 +104,6 @@ async function copiarConAviso(btn, texto) {
     } catch (e) {
         prompt('No se pudo copiar automáticamente. Copia el link:', texto);
     }
-}
-
-// Animación del botón "Actualizar"
-function estadoCargando(cargando, textoNormal = 'Actualizar') {
-    const btn = document.getElementById('btnRefresh');
-    const icon = document.getElementById('iconRefresh');
-    const text = document.getElementById('textRefresh');
-    if (!btn || !icon || !text) return;
-    icon.classList.toggle('animate-spin', cargando);
-    text.innerText = cargando ? 'Cargando...' : textoNormal;
-    btn.disabled = cargando;
-    btn.classList.toggle('opacity-75', cargando);
-    btn.classList.toggle('cursor-not-allowed', cargando);
-}
-
-// Una fila "tiene datos" si se capturó cualquier cosa (no hace falta escribir Familia o Nombre)
-function tieneDatos(r) {
-    return [r.familia, r.nombres, r.mesa].some(v => String(v ?? '').trim() !== '')
-        || num(r.total) + num(r.adultos) + num(r.adolescentes) + num(r.ninos) > 0;
-}
-
-// Nombre a mostrar: Familia o Nombre, si no los nombres de los invitados, si no el código
-function nombreVisible(r) {
-    return String(r.familia ?? '').trim() || String(r.nombres ?? '').trim() || `Invitado ${r.id}`;
-}
-
-function sumaPersonas(r) {
-    const suma = num(r.adultos) + num(r.adolescentes) + num(r.ninos);
-    return suma || num(r.total) || num(r.cantidad);
-}
-
-// Agrupa registros por mesa. Entiende "1 y 5", "Mesa 4, 5" o textos como "Honor"
-function agruparPorMesa(registros) {
-    const mesas = {};
-    const sinMesa = [];
-    registros.forEach(r => {
-        const mesa = String(r.mesa || '').trim();
-        if (!mesa) return sinMesa.push(r);
-        const numeros = mesa.match(/\d+/g);
-        const llaves = numeros ? [...new Set(numeros.map(n => String(parseInt(n, 10))))] : [mesa];
-        llaves.forEach(k => (mesas[k] = mesas[k] || []).push(r));
-    });
-    const orden = Object.keys(mesas).sort((a, b) => {
-        const na = Number(a), nb = Number(b);
-        if (!isNaN(na) && !isNaN(nb)) return na - nb;
-        if (!isNaN(na)) return -1;
-        if (!isNaN(nb)) return 1;
-        return a.localeCompare(b);
-    });
-    return { mesas, orden, sinMesa };
 }
 
 // Fechas de api.php ("2026-10-06 14:30:00") -> "6 oct 2026, 14:30"

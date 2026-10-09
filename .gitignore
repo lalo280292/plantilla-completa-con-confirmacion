@@ -1,0 +1,4 @@
+# Respuestas reales de los invitados: no se suben al repositorio
+data/*
+!data/.htaccess
+!data/index.html

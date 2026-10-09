@@ -185,7 +185,7 @@
                 return;
             }
 
-            // El pase solo se entrega si la confirmación existe en confirmados.json y dice "Sí"
+            // El pase solo se entrega si la respuesta existe en confirmados.json y dice "Sí"
             try {
                 const res = await fetch(`api.php?accion=confirmacion&id=${encodeURIComponent(id)}&t=${Date.now()}`, { cache: 'no-store' });
                 const data = await res.json();
@@ -201,10 +201,10 @@
                 const c = data.confirmacion;
                 const datos = document.querySelector('#datos-pase');
                 datos.innerHTML = '';
-                const familia = document.createElement('strong');
-                familia.textContent = c.familia;
-                datos.append(familia, document.createElement('br'),
-                    `${c.cantidad} ${c.cantidad == 1 ? 'persona' : 'personas'}` + (c.mesa ? ` · Mesa ${c.mesa}` : ''));
+                const nombre = document.createElement('strong');
+                nombre.textContent = c.nombre;
+                datos.append(nombre, document.createElement('br'),
+                    `${c.cantidad} ${c.cantidad == 1 ? 'persona' : 'personas'} · Código ${c.id}`);
                 datos.style.display = 'block';
             } catch (err) {
                 console.error(err);

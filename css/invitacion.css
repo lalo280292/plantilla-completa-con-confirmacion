@@ -202,7 +202,7 @@
    ===================================================================== */
 
 /* Módulos con fondo alterno (lino) */
-#padres, #fecha, #itinerario, #galeria, #regalos, #invitados, #formulario {
+#padres, #fecha, #itinerario, #galeria, #regalos, #formulario {
   --fondo-color: var(--color-fondo-alterno);
 }
 

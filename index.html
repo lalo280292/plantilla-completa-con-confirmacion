@@ -26,7 +26,7 @@
        ================================================================= -->
   <script>
     const AJUSTES = {
-      // Para el contador, el calendario y el formulario. Fecha: AAAA-MM-DDTHH:MM:00 (24 h)
+      // Para el contador y el calendario. Fecha: AAAA-MM-DDTHH:MM:00 (24 h)
       evento: {
         titulo:      "Boda de Sofía & Mateo",
         fecha:       "2027-04-17T17:00:00",
@@ -34,16 +34,10 @@
         lugar:       "Tepoztlán, Morelos",
         descripcion: "¡Te esperamos para celebrar nuestra boda!",
       },
-      // Invitado cuando el link no trae ?invitado=...&pases=...  (crea links con generador-links.html)
-      invitado: { nombre: "Familia Ramírez Ortega", pases: 4 },
-
-      // WhatsApp: código de país + número, solo dígitos ("" = sin botón de WhatsApp)
-      whatsapp:        "5215512345678",
-      mensajeWhatsapp: "¡Hola! Soy {invitado} y quiero confirmar mi asistencia a la boda de Sofía & Mateo.",
-
+      // Formulario de confirmación: se guarda en api.php (ver respuestas en panel.html)
       formulario: {
-        enviarA:      "whatsapp",   // "whatsapp" = abre WhatsApp con la respuesta · "prueba" = solo dice gracias
-        googleSheets: "",           // opcional: URL de Google Apps Script para guardar respuestas
+        api:         "api.php",
+        maxPersonas: 10,            // el invitado elige de 1 a este número de personas
       },
       portada: { cadaSegundos: 5, transicionSegundos: 2 },   // carrusel de fotos de la portada
       sobre:   { velocidad: 1 },                            // 1 normal · 1.5 más rápido · 0.7 más lento
@@ -51,8 +45,8 @@
     };
   </script>
 
-  <link rel="stylesheet" href="css/invitacion.css">
-  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/invitacion.css?v=3">
+  <link rel="stylesheet" href="css/base.css?v=3">
   <noscript><style>html.cargando body { visibility: visible; } .sobre { display: none; }</style></noscript>
 </head>
 <body>
@@ -91,8 +85,6 @@
     </div>
     <div class="sobre__textos">
       <p class="sobre__titulo">Sofía &amp; Mateo</p>
-      <p class="sobre__para">Una invitación especial para</p>
-      <p class="sobre__invitado" data-invitado-nombre></p>
       <p class="sobre__ayuda">Toca el sello para abrir</p>
     </div>
     <span class="sobre__sello">
@@ -566,33 +558,13 @@
     </div>
   </section>
 
-  <!-- ============================ PASE DE ENTRADA ============================ -->
-  <!-- El nombre y los pases vienen del link del invitado o de AJUSTES.invitado.
-       {pases} se cambia por el número; data-uno es el texto cuando es 1 pase. -->
-  <section class="modulo" id="invitados" data-animacion="subir">
-    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:4%" data-anim="hoja-izquierda">
-    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:4%" data-anim="hoja-derecha">
-    <div class="contenedor">
-      <header class="encabezado">
-        <h2 class="titulo" data-anim>Pase de entrada</h2>
-        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
-      </header>
-      <div class="pase" data-anim>
-        <span class="icono-circulo"><img src="iconos/personas.png" alt=""></span>
-        <p class="etiqueta">Esta invitación es para</p>
-        <p class="pase__nombre" data-invitado-nombre></p>
-        <span class="pase__linea"></span>
-        <p class="pase__pases" data-invitado-pases data-uno="Hemos reservado <b>1</b> lugar en su honor">Hemos reservado <b>{pases}</b> lugares en su honor</p>
-      </div>
-      <p class="nota nota--icono" data-anim>
-        <img class="icono-linea" src="iconos/ninos.png" alt=""><span>Con cariño, este evento es solo para adultos.</span>
-      </p>
-    </div>
-  </section>
-
-  <!-- ============================ CONFIRMAR ASISTENCIA ============================ -->
-  <!-- El número y mensaje de WhatsApp están en AJUSTES (arriba) -->
-  <section class="modulo" id="confirmar" data-animacion="subir">
+  <!-- ============================ CONFIRMAR ASISTENCIA (formulario) ============================ -->
+  <!-- Un solo link para todos: cada envío es una respuesta nueva con su código de 5 caracteres
+       y su pase con QR (paseqr.html). Se ve en panel.html.
+       El mensaje es opcional y aparece en el Libro de Felicitaciones (firmas.html). -->
+  <section class="modulo" id="formulario" data-animacion="subir">
+    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:55%" data-anim="hoja-izquierda">
+    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:55%" data-anim="hoja-derecha">
     <div class="contenedor">
       <header class="encabezado">
         <span class="icono-circulo" data-anim><img src="iconos/check.png" alt=""></span>
@@ -600,33 +572,11 @@
         <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
       </header>
       <p class="texto" data-anim>Por favor confírmanos antes del <b>1 de marzo de 2027</b>. Tu respuesta nos ayuda a preparar todo con mucho cariño.</p>
-      <div class="botones">
-        <a class="boton" href="#formulario" data-anim="latido">
-          <img class="boton__icono" src="iconos/pluma.png" alt=""><span>Ir al formulario</span>
-        </a>
-        <a class="boton boton--borde" data-confirmar-whatsapp target="_blank" rel="noopener" data-anim>
-          <img class="boton__icono" src="iconos/whatsapp.png" alt=""><span>Confirmar por WhatsApp</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================ FORMULARIO DE CONFIRMACIÓN ============================ -->
-  <!-- A dónde se envía: AJUSTES.formulario (arriba). Teléfono y mensaje son opcionales: borra su <label> si no los quieres -->
-  <section class="modulo" id="formulario" data-animacion="subir">
-    <img class="adorno" src="tematica/hoja-izquierda.png" alt="" style="--x:-7%; --y:55%" data-anim="hoja-izquierda">
-    <img class="adorno" src="tematica/hoja-derecha.png" alt="" style="--derecha:-7%; --y:55%" data-anim="hoja-derecha">
-    <div class="contenedor">
-      <header class="encabezado">
-        <h2 class="titulo" data-anim>Formulario</h2>
-        <img class="divisor" src="tematica/divisor.png" alt="" data-anim="linea">
-      </header>
-      <p class="texto" data-anim>Llena tus datos y presiona enviar.</p>
 
       <form class="formulario tarjeta" id="form-confirmacion" novalidate data-anim>
         <label class="campo">
           <span>Nombre completo</span>
-          <input name="nombre" type="text" autocomplete="name" required>
+          <input name="nombre" type="text" autocomplete="name" maxlength="150" required>
         </label>
         <fieldset class="campo">
           <legend>¿Nos acompañarás?</legend>
@@ -635,18 +585,20 @@
             <label class="opcion"><input type="radio" name="asistencia" value="no"><span>Lo siento, no podré ir</span></label>
           </div>
         </fieldset>
-        <label class="campo" data-campo-personas>
-          <span>Número de asistentes</span>
+        <label class="campo" data-solo-si>
+          <span>Número de personas (contándote)</span>
           <select name="personas"></select>
         </label>
-        <label class="campo">
-          <span>Teléfono (opcional)</span>
-          <input name="telefono" type="tel" autocomplete="tel">
+        <label class="campo" data-solo-si>
+          <span>Nombres de los invitados</span>
+          <textarea name="nombres" rows="3" maxlength="1000" placeholder="Uno por renglón"></textarea>
         </label>
         <label class="campo">
-          <span>Mensaje para los novios (opcional)</span>
-          <textarea name="mensaje" rows="3"></textarea>
+          <span>Felicitaciones para los novios (opcional)</span>
+          <textarea name="mensaje" rows="3" maxlength="2000"></textarea>
         </label>
+        <!-- Campo trampa contra robots: no lo borres -->
+        <input class="formulario__trampa" name="sitio" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
         <p class="formulario__error" data-form-error hidden></p>
         <button class="boton boton--ancho" type="submit">
           <img class="boton__icono" src="iconos/sobre.png" alt=""><span>Enviar confirmación</span>
@@ -655,7 +607,21 @@
 
       <div class="formulario__gracias tarjeta" data-form-gracias hidden>
         <span class="icono-circulo"><img src="iconos/corazon.png" alt=""></span>
-        <p class="texto">¡Gracias por confirmar! Nos hace muy felices compartir este día contigo.</p>
+        <p class="texto">¡Gracias por responder! Tu confirmación quedó registrada.</p>
+        <div data-form-pase hidden>
+          <p class="etiqueta">Tu código</p>
+          <p class="formulario__codigo" data-form-codigo></p>
+          <div class="botones">
+            <a class="boton" data-form-pase-link target="_blank" rel="noopener">
+              <img class="boton__icono" src="iconos/check.png" alt=""><span>Descargar mi pase con QR</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="formulario__gracias tarjeta" data-form-cerrado hidden>
+        <span class="icono-circulo"><img src="iconos/calendario.png" alt=""></span>
+        <p class="texto">La confirmación de asistencia ya está cerrada. ¡Gracias!</p>
       </div>
     </div>
   </section>
@@ -683,7 +649,7 @@
 <!-- 🔒 No cambiar el orden -->
 <script src="librerias/gsap.min.js"></script>
 <script src="librerias/ScrollTrigger.min.js"></script>
-<script src="js/animaciones.js"></script>
-<script src="js/funciones.js"></script>
+<script src="js/animaciones.js?v=3"></script>
+<script src="js/funciones.js?v=3"></script>
 </body>
 </html>

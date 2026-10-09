@@ -2,7 +2,7 @@
    ⚙️  FUNCIONES  —  NO se edita por invitación
    ---------------------------------------------------------------------
    Sobre, carrusel de portada, contador, calendario, galería con visor,
-   copiar datos, invitado por link, WhatsApp, formulario y música.
+   copiar datos, formulario de confirmación (api.php) y música.
    Lee los textos directamente de index.html y los ajustes de AJUSTES
    (el bloque <script> al inicio de index.html).
    ===================================================================== */
@@ -18,7 +18,6 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const raizHtml = document.documentElement;
   const limpiar = (s) => String(s || "").replace(/<br\s*\/?>/gi, ", ").replace(/<[^>]+>/g, "").trim();
-  const soloDigitos = (s) => String(s || "").replace(/\D/g, "");
 
   // Ejecuta un paso sin que un error detenga toda la invitación
   function paso(nombre, fn) {
@@ -35,28 +34,6 @@
     $$('a[href^="#"]').forEach((a) => {
       const id = a.getAttribute("href").slice(1);
       if (id && !document.getElementById(id)) a.hidden = true;
-    });
-  }
-
-  /* ---------------------------------------------------------------
-     INVITADO PERSONALIZADO  (?invitado=Familia%20López&pases=4)
-     --------------------------------------------------------------- */
-  const params = new URLSearchParams(location.search);
-  const INV = A.invitado || {};
-  const nombreInvitado = (params.get("invitado") || params.get("n") || INV.nombre || "").trim();
-  const pasesInvitado = parseInt(params.get("pases") || params.get("p") || INV.pases, 10) || 0;
-
-  function prepararInvitado() {
-    $$("[data-invitado-nombre]").forEach((el) => {
-      el.textContent = nombreInvitado;          // textContent: el link no puede inyectar HTML
-      if (!nombreInvitado) el.hidden = true;
-    });
-    if (!nombreInvitado) $$(".sobre__para").forEach((el) => (el.hidden = true));
-    // Texto con {pases}; si es 1 usa data-uno
-    $$("[data-invitado-pases]").forEach((el) => {
-      if (!pasesInvitado) { el.hidden = true; return; }
-      const plantilla = pasesInvitado === 1 && el.dataset.uno ? el.dataset.uno : el.innerHTML;
-      el.innerHTML = plantilla.replace(/\{pases\}/g, pasesInvitado);
     });
   }
 
@@ -388,97 +365,101 @@
   }
 
   /* ---------------------------------------------------------------
-     CONFIRMAR POR WHATSAPP (botón directo)
-     --------------------------------------------------------------- */
-  function prepararConfirmar() {
-    $$("[data-confirmar-whatsapp]").forEach((boton) => {
-      const numero = soloDigitos(A.whatsapp);
-      if (!numero) { boton.hidden = true; return; }
-      const mensaje = limpiar(A.mensajeWhatsapp).replace(/\{invitado\}/g, nombreInvitado || "");
-      boton.href = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
-    });
-  }
-
-  /* ---------------------------------------------------------------
-     FORMULARIO DE CONFIRMACIÓN
+     FORMULARIO DE CONFIRMACIÓN  (se guarda en api.php)
+     Un solo link para todos: cada envío es una respuesta nueva con su
+     código de 5 caracteres; si asiste, se le ofrece su pase con QR.
      --------------------------------------------------------------- */
   function prepararFormulario() {
     const form = $("#form-confirmacion");
     if (!form) return;
     const F = A.formulario || {};
+    const api = F.api || "api.php";
     const error = $("[data-form-error]");
     const gracias = $("[data-form-gracias]");
-    const campoPersonas = $("[data-campo-personas]", form);
+    const cerrado = $("[data-form-cerrado]");
+    const soloSi = $$("[data-solo-si]", form);
     const selectPersonas = form.elements.personas;
+    const boton = $('button[type="submit"]', form);
     const valor = (nombre) => (form.elements[nombre] ? form.elements[nombre].value.trim() : "");
-    // Usa el texto de cada etiqueta del formulario para el mensaje de WhatsApp
-    const etiqueta = (nombre, porDefecto) => {
-      const campo = form.elements[nombre];
-      const caja = campo && (campo.closest ? campo.closest(".campo") : campo[0].closest(".campo"));
-      const t = caja && caja.querySelector(":scope > span, :scope > legend");
-      return (t && t.textContent.trim()) || porDefecto;
-    };
 
-    if (selectPersonas) {
-      const maximo = pasesInvitado || 10;
+    function llenarPersonas(maximo) {
+      if (!selectPersonas) return;
+      selectPersonas.length = 0;
       for (let i = 1; i <= maximo; i++) selectPersonas.add(new Option(String(i), String(i)));
-      selectPersonas.value = String(maximo);
     }
-    if (nombreInvitado && form.elements.nombre) form.elements.nombre.value = nombreInvitado;
+    llenarPersonas(Number(F.maxPersonas) || 10);
+
+    function mostrar(el) {
+      form.hidden = true;
+      if (!el) return;
+      el.hidden = false;
+      if (hayGsap) EFECTOS.mostrar(el);
+    }
+    function avisar(texto, campo) {
+      error.textContent = texto;
+      error.hidden = false;
+      if (campo) {
+        campo.closest(".campo").classList.add("con-error");
+        campo.focus();
+      }
+    }
+
+    // ¿El formulario sigue abierto? (se abre / cierra desde panel.html)
+    fetch(`${api}?accion=formulario&t=${Date.now()}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.maxPersonas) llenarPersonas(Math.min(Number(F.maxPersonas) || d.maxPersonas, d.maxPersonas));
+        if (d.formVisible === false) mostrar(cerrado);
+      })
+      .catch(() => {});
 
     form.addEventListener("change", () => {
-      if (campoPersonas) campoPersonas.hidden = valor("asistencia") === "no";
+      soloSi.forEach((el) => (el.hidden = valor("asistencia") === "no"));
+    });
+    form.elements.nombre.addEventListener("input", () => {
+      form.elements.nombre.closest(".campo").classList.remove("con-error");
     });
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const nombre = valor("nombre");
-      const campoNombre = form.elements.nombre.closest(".campo");
-      if (!nombre) {
-        error.textContent = "Por favor escribe tu nombre.";
-        error.hidden = false;
-        campoNombre.classList.add("con-error");
-        form.elements.nombre.focus();
-        return;
-      }
+      if (!nombre) { avisar("Por favor escribe tu nombre.", form.elements.nombre); return; }
       error.hidden = true;
-      campoNombre.classList.remove("con-error");
 
       const asiste = valor("asistencia") !== "no";
       const datos = {
-        evento:     limpiar(A.evento && A.evento.titulo),
-        invitacion: nombreInvitado,
         nombre,
-        asistencia: asiste ? "Sí" : "No",
-        personas:   asiste && selectPersonas ? selectPersonas.value : "0",
-        telefono:   valor("telefono"),
-        mensaje:    valor("mensaje"),
-        fecha:      new Date().toISOString(),
+        asistira: asiste ? "Si" : "No",
+        cantidad: asiste && selectPersonas ? Number(selectPersonas.value) : 0,
+        nombres:  asiste ? valor("nombres") : "",
+        mensaje:  valor("mensaje"),
+        sitio:    valor("sitio"),
       };
 
-      // Opcional: guardar en Google Sheets
-      if (F.googleSheets) {
-        fetch(F.googleSheets, { method: "POST", mode: "no-cors", body: JSON.stringify(datos) }).catch(() => {});
-      }
-
-      // WhatsApp
-      const numero = soloDigitos(F.whatsapp || A.whatsapp);
-      if (F.enviarA === "whatsapp" && numero) {
-        const lineas = [
-          `*Confirmación · ${datos.evento}*`,
-          `${etiqueta("nombre", "Nombre")}: ${datos.nombre}`,
-          `${etiqueta("asistencia", "¿Asistirá?")} ${asiste ? "Sí ✅" : "No ❌"}`,
-        ];
-        if (asiste && selectPersonas) lineas.push(`${etiqueta("personas", "Personas")}: ${datos.personas}`);
-        if (datos.telefono) lineas.push(`Teléfono: ${datos.telefono}`);
-        if (datos.mensaje) lineas.push(`Mensaje: ${datos.mensaje}`);
-        window.open(`https://wa.me/${numero}?text=${encodeURIComponent(lineas.join("\n"))}`, "_blank");
-      }
-
-      form.hidden = true;
-      if (gracias) {
-        gracias.hidden = false;
-        if (hayGsap) EFECTOS.mostrar(gracias);
+      boton.disabled = true;
+      try {
+        const res = await fetch(`${api}?accion=confirmar`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (res.status === 403) { mostrar(cerrado); return; }
+        if (!res.ok || !json.ok) throw new Error(json.error || "No se pudo enviar.");
+        const c = json.confirmacion;
+        const pase = $("[data-form-pase]");
+        if (pase && c && c.asistira === "Si") {
+          $("[data-form-codigo]", pase).textContent = c.id;
+          $("[data-form-pase-link]", pase).href = "paseqr.html?id=" + encodeURIComponent(c.id);
+          pase.hidden = false;
+        }
+        mostrar(gracias);
+      } catch (err) {
+        avisar(err instanceof TypeError   // fetch lanza TypeError cuando no hay conexión
+          ? "No hay conexión. Revisa tu internet e inténtalo de nuevo."
+          : err.message);
+      } finally {
+        boton.disabled = false;
       }
     });
   }
@@ -487,14 +468,12 @@
      ARRANQUE
      --------------------------------------------------------------- */
   paso("general", prepararGeneral);
-  paso("invitado", prepararInvitado);
   paso("música", prepararMusica);
   paso("portada", prepararPortada);
   paso("contador", prepararContador);
   paso("calendario", prepararCalendario);
   paso("galería", prepararGaleria);
   paso("copiar", prepararCopiar);
-  paso("confirmar", prepararConfirmar);
   paso("formulario", prepararFormulario);
 
   paso("sobre", () => prepararSobre(() => {

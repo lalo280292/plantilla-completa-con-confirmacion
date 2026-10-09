@@ -307,8 +307,6 @@ p { margin: 0 0 .8em; }
   line-height: 1.05;
   color: var(--color-titulos);
 }
-.sobre__para { margin: 0; font-family: var(--fuente-detalles); font-size: .66rem; letter-spacing: .22em; text-transform: uppercase; }
-.sobre__invitado { margin: .2em 0 0; font-size: clamp(1.25rem, 4.6vmin, 1.7rem); font-style: italic; }
 .sobre__ayuda {
   margin: 1.6em 0 0;
   font-family: var(--fuente-detalles);
@@ -919,45 +917,6 @@ p { margin: 0 0 .8em; }
 
 
 /* =====================================================================
-   INVITADOS (PASE)
-   ===================================================================== */
-.pase {
-  position: relative;
-  max-width: 440px;
-  margin: 0 auto;
-  padding: 34px 26px;
-  border: 1px solid var(--color-borde);
-  border-radius: 22px;
-  background: var(--color-tarjeta);
-  box-shadow: var(--sombra-suave);
-}
-.pase::before, .pase::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 26px;
-  height: 26px;
-  margin-top: -13px;
-  border-radius: 50%;
-  background: var(--fondo-color);
-  box-shadow: inset 0 0 0 1px var(--color-borde);
-}
-.pase::before { left: -14px; }
-.pase::after  { right: -14px; }
-.pase__nombre {
-  margin: 10px 0;
-  font-family: var(--fuente-titulos);
-  font-size: clamp(2.2rem, 9vw, 3rem);
-  line-height: 1.15;
-  color: var(--color-titulos);
-}
-.pase__linea { display: block; margin: 18px auto; border-top: 1px dashed var(--color-arena); }
-.pase__pases { margin: 0; font-size: 1.2rem; }
-.pase__pases b { font-family: var(--fuente-detalles); font-size: 1.25em; color: var(--color-acento-oscuro); }
-.nota--icono { display: flex; align-items: center; justify-content: center; gap: .6em; }
-
-
-/* =====================================================================
    FORMULARIO
    ===================================================================== */
 .formulario { display: grid; gap: 18px; max-width: 520px; margin: 0 auto; text-align: left; }
@@ -1008,6 +967,9 @@ p { margin: 0 0 .8em; }
 .opcion input:focus-visible + span { outline: 2px solid var(--color-acento-claro); outline-offset: 2px; }
 .formulario__error { margin: 0; color: #b4553f; font-size: 1rem; text-align: center; }
 .formulario__gracias { max-width: 520px; margin: 0 auto; }
+.formulario__codigo { margin: 4px 0 14px; font-family: var(--fuente-detalles); font-size: 1.9rem; font-weight: 600; letter-spacing: .25em; color: var(--color-acento-oscuro); }
+.formulario__trampa { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.formulario button[type="submit"]:disabled { opacity: .6; cursor: wait; }
 
 
 /* =====================================================================

@@ -7,7 +7,7 @@
     <title>Mi confirmación</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="admin.js"></script>
+    <script src="admin.js?v=4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -33,6 +33,16 @@
 
     <main class="max-w-xl mx-auto p-4 space-y-4 pb-16">
 
+        <!-- BUSCAR POR CÓDIGO (por si el QR no se puede leer) -->
+        <form id="formBuscar" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex gap-2">
+            <input id="codigo" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                class="mono flex-1 min-w-0 px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 text-xl font-bold uppercase tracking-widest outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                placeholder="CÓDIGO">
+            <button class="px-5 rounded-xl bg-slate-900 text-white font-bold flex items-center gap-2 hover:bg-slate-700 transition">
+                <i class="ph-bold ph-magnifying-glass text-lg"></i><span class="hidden sm:inline">Buscar</span>
+            </button>
+        </form>
+
         <!-- RESULTADO -->
         <section id="resultado"></section>
 
@@ -40,71 +50,63 @@
         <div class="text-center pt-2">
             <button id="btnRefresh" onclick="recargarActual()" class="hidden inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 text-base font-semibold py-2 px-4">
                 <i id="iconRefresh" class="ph ph-arrows-clockwise text-xl"></i>
-                <span id="textRefresh">Actualizar datos</span>
+                <span>Actualizar datos</span>
             </button>
         </div>
     </main>
 
     <script>
         // Página que se abre al escanear el QR del pase (paseqr.html): escaner.html?id=XXXXX
-        // Solo muestra los datos de la confirmación, en letra grande para leerlos rápido.
-        const parametros = new URLSearchParams(location.search);
-        let actual = null; // datos del código que se está viendo
+        // Muestra los datos de la confirmación en letra grande para leerlos rápido.
+        // Sin ?id= se puede escribir el código a mano.
+        let actual = null; // código que se está viendo
 
         document.addEventListener('DOMContentLoaded', () => {
-            const id = parametros.get('id');
+            const id = new URLSearchParams(location.search).get('id');
             if (id) cargar(id);
-            else pintarError('No se especificó un código en el enlace.', 'Abre esta página desde tu pase de acceso.');
+            else document.getElementById('codigo').focus();
+        });
+
+        document.getElementById('formBuscar').addEventListener('submit', e => {
+            e.preventDefault();
+            const id = document.getElementById('codigo').value.trim().toUpperCase();
+            if (!id) return;
+            history.replaceState(null, '', '?id=' + encodeURIComponent(id));
+            cargar(id);
         });
 
         // ===== CARGA DE DATOS =====
 
         function recargarActual() {
-            if (actual) cargar(actual.id);
+            if (actual) cargar(actual);
         }
 
         async function cargar(id) {
+            id = String(id).toUpperCase();
+            actual = id;
+            document.getElementById('codigo').value = id;
             document.getElementById('btnRefresh').classList.remove('hidden');
-            estadoCargando(true, 'Actualizar datos');
+            document.getElementById('iconRefresh').classList.add('animate-spin');
             pintarCargando(id);
             try {
-                const res = await fetch(`api.php?accion=escaneo&id=${encodeURIComponent(id)}&t=${Date.now()}`, { cache: 'no-store' });
+                const res = await fetch(`api.php?accion=confirmacion&id=${encodeURIComponent(id)}&t=${Date.now()}`, { cache: 'no-store' });
                 const data = await res.json().catch(() => ({ ok: false, error: 'Error de conexión.' }));
                 if (!data.ok) {
-                    actual = null;
-                    if (res.status === 404) pintarError('Código no encontrado', `El código ${String(id).toUpperCase()} no existe en la lista de invitados.`);
+                    if (res.status === 404) pintarError('Código no encontrado', `El código ${id} no existe en las confirmaciones.`);
                     else throw new Error(data.error);
                     return;
                 }
-                actual = data;
-                pintarResultado(data);
+                pintarResultado(data.confirmacion);
             } catch (error) {
                 console.error(error);
                 pintarError('No se pudo cargar', error.message || 'Revisa la conexión a internet.');
             } finally {
-                estadoCargando(false, 'Actualizar datos');
+                document.getElementById('iconRefresh').classList.remove('animate-spin');
             }
-        }
-
-        // ===== ESTADO DEL CÓDIGO =====
-
-        function calcularEstado(d) {
-            const conf = d.confirmacion;
-            if (!conf) {
-                return { color: 'orange', icono: 'ph-fill ph-question',
-                    titulo: 'Sin confirmar', detalle: 'El código es válido, pero aún no se responde el formulario' };
-            }
-            if (conf.asistira !== 'Si') {
-                return { color: 'rose', icono: 'ph-fill ph-x-circle',
-                    titulo: 'No asistirá', detalle: 'Respondió que no podrá asistir' };
-            }
-            return { color: 'emerald', icono: 'ph-fill ph-check-circle',
-                titulo: 'Asistencia confirmada', detalle: '¡Te esperamos!' };
         }
 
         const COLORES = {
             emerald: 'bg-gradient-to-br from-emerald-500 to-green-600',
-            orange:  'bg-gradient-to-br from-orange-400 to-amber-500',
             rose:    'bg-gradient-to-br from-rose-500 to-red-600',
         };
 
@@ -115,29 +117,12 @@
 
         // ===== PINTAR =====
 
-        function pintarResultado(d) {
-            const est = calcularEstado(d);
-            const conf = d.confirmacion;
-            const inv = d.invitado || {};
-            const asiste = conf && conf.asistira === 'Si';
-            const fuente = asiste ? conf : inv;
-            const nombre = conf ? conf.familia : (inv.nombre_visible || nombreVisible(inv));
-            const mesa = (conf && conf.mesa) || inv.mesa || '';
-            const personas = asiste ? num(conf.cantidad) : sumaPersonas(inv);
-            const adu = num(fuente.adultos), ado = num(fuente.adolescentes), nin = num(fuente.ninos);
-            const nombres = listaNombres(asiste ? conf.nombres : inv.nombres);
-
-            const tile = (n, etiqueta, corta, clases) => `
-                <div class="rounded-2xl ${clases} px-1 py-3 text-center min-w-0">
-                    <p class="text-4xl sm:text-5xl font-black leading-none">${n}</p>
-                    <p class="mt-1 text-xs sm:text-sm font-bold uppercase opacity-80"><span class="sm:hidden">${corta}</span><span class="hidden sm:inline">${etiqueta}</span></p>
-                </div>`;
-            const desglose = adu + ado + nin > 0 ? `
-                <div class="grid grid-cols-3 gap-3">
-                    ${tile(adu, adu === 1 ? 'Adulto' : 'Adultos', adu === 1 ? 'Adulto' : 'Adultos', 'bg-blue-50 text-blue-700')}
-                    ${tile(ado, ado === 1 ? 'Adolescente' : 'Adolescentes', 'Adolesc.', 'bg-amber-50 text-amber-700')}
-                    ${tile(nin, nin === 1 ? 'Niño' : 'Niños', nin === 1 ? 'Niño' : 'Niños', 'bg-green-50 text-green-700')}
-                </div>` : '';
+        function pintarResultado(c) {
+            const asiste = c.asistira === 'Si';
+            const est = asiste
+                ? { color: 'emerald', icono: 'ph-fill ph-check-circle', titulo: 'Asistencia confirmada', detalle: '¡Te esperamos!' }
+                : { color: 'rose', icono: 'ph-fill ph-x-circle', titulo: 'No asistirá', detalle: 'Respondió que no podrá asistir' };
+            const nombres = listaNombres(c.nombres);
 
             document.getElementById('resultado').innerHTML = `
                 <article class="entrar bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
@@ -153,25 +138,17 @@
                     <div class="p-5 space-y-5">
                         <!-- Nombre -->
                         <div class="text-center">
-                            <p class="text-sm uppercase tracking-widest font-bold text-slate-400">Invitación para</p>
-                            <h3 class="text-3xl sm:text-4xl font-black text-slate-900 leading-tight break-words mt-1">${esc(nombre)}</h3>
-                            <p class="mono mt-2 inline-block text-base font-bold text-slate-500 bg-slate-100 rounded-lg px-3 py-1 tracking-widest">${esc(d.id)}</p>
+                            <p class="text-sm uppercase tracking-widest font-bold text-slate-400">Confirmación de</p>
+                            <h3 class="text-3xl sm:text-4xl font-black text-slate-900 leading-tight break-words mt-1">${esc(c.nombre)}</h3>
+                            <p class="mono mt-2 inline-block text-base font-bold text-slate-500 bg-slate-100 rounded-lg px-3 py-1 tracking-widest">${esc(c.id)}</p>
                         </div>
 
-                        <!-- Mesa -->
-                        <div class="rounded-3xl ${mesa ? 'bg-indigo-50 border-indigo-100' : 'bg-yellow-50 border-yellow-200'} border p-5 text-center">
-                            <p class="text-base uppercase tracking-widest font-bold ${mesa ? 'text-indigo-400' : 'text-yellow-600'}">Mesa</p>
-                            <p class="${mesa ? 'text-8xl text-indigo-700' : 'text-3xl text-yellow-700 py-2'} font-black leading-none mt-2 break-words">${mesa ? esc(mesa) : 'Sin asignar'}</p>
-                        </div>
-
+                        ${asiste ? `
                         <!-- Personas -->
-                        <div class="rounded-3xl bg-slate-50 border border-slate-200 p-5 space-y-4">
-                            <div class="text-center">
-                                <p class="text-base uppercase tracking-widest font-bold text-slate-400">${asiste ? 'Personas confirmadas' : 'Personas invitadas'}</p>
-                                <p class="text-8xl font-black text-slate-800 leading-none mt-2">${personas || '—'}</p>
-                            </div>
-                            ${desglose}
-                        </div>
+                        <div class="rounded-3xl bg-slate-50 border border-slate-200 p-5 text-center">
+                            <p class="text-base uppercase tracking-widest font-bold text-slate-400">Personas confirmadas</p>
+                            <p class="text-8xl font-black text-slate-800 leading-none mt-2">${num(c.cantidad)}</p>
+                        </div>` : ''}
 
                         ${nombres.length ? `
                         <div class="rounded-3xl bg-slate-50 border border-slate-200 p-5">
@@ -185,11 +162,9 @@
                             </ul>
                         </div>` : ''}
 
-                        ${conf ? `
-                        <div class="text-center text-base text-slate-500 space-y-1">
-                            <p><i class="ph ph-calendar-check"></i> Confirmó el <b class="text-slate-700">${esc(fechaLarga(conf.fecha, true))}</b></p>
-                            ${conf.actualizado && conf.actualizado !== conf.fecha ? `<p class="text-sm">Última modificación: ${esc(fechaLarga(conf.actualizado, true))}</p>` : ''}
-                        </div>` : ''}
+                        <div class="text-center text-base text-slate-500">
+                            <p><i class="ph ph-calendar-check"></i> Confirmó el <b class="text-slate-700">${esc(fechaLarga(c.fecha, true))}</b></p>
+                        </div>
                     </div>
                 </article>`;
         }
@@ -198,7 +173,7 @@
             document.getElementById('resultado').innerHTML = `
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-10 text-center text-slate-400 text-lg">
                     <i class="ph ph-spinner animate-spin text-5xl block mx-auto mb-3"></i>
-                    Buscando <span class="mono font-bold text-slate-600">${esc(String(id).toUpperCase())}</span>...
+                    Buscando <span class="mono font-bold text-slate-600">${esc(id)}</span>...
                 </div>`;
         }
 
